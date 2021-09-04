@@ -4,6 +4,9 @@ import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 
 
+dataset = Planetoid(root='data/Cora', name='Cora')
+
+
 class GCN(torch.nn.Module):
     def __init__(self):
         super(GCN, self).__init__()
@@ -20,8 +23,6 @@ class GCN(torch.nn.Module):
 
         return F.log_softmax(x, dim=1)
 
-
-dataset = Planetoid(root='data/Cora', name='Cora')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = GCN().to(device)
