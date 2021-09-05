@@ -10,7 +10,7 @@ dataset = Planetoid(root='data/Cora', name='Cora')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 # model = GCN(dataset).to(device)
 model = GraphUNet(in_channels=dataset.num_features,
-                  hidden_channels=dataset.num_features//2,
+                  hidden_channels=16,
                   out_channels=dataset.num_classes,
                   depth=3).to(device)
 data = dataset[0].to(device)
