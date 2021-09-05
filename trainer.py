@@ -23,32 +23,36 @@ def train(epoch):
     model.train()
     optimizer.zero_grad()
     out = model(data.x, data.edge_index)
-    loss = F.nll_loss(out[data.train_mask + data.val_mask], data.y[data.train_mask + data.val_mask])
+    loss = F.nll_loss(out[data.train_mask], data.y[data.train_mask])
     loss.backward()
     optimizer.step()
 
     pred = out.argmax(dim=1)
-    correct = sum(pred[data.train_mask + data.val_mask] == data.y[data.train_mask + data.val_mask])
-    acc = int(correct) / int(sum(data.train_mask + data.val_mask))
+    correct = sum(pred[data.train_mask] == data.y[data.train_mask])
+    acc = int(correct) / int(sum(data.train_mask))
     writer.add_scalar("train/loss", loss, epoch)
     writer.add_scalar("train/acc", acc, epoch)
     print(f"{epoch}: {acc}")
 
 
-def test(epoch):
+def test(epoch, mode="val"):
     model.eval()
     with torch.no_grad():
-        out = model(data)
-        loss = F.nll_loss(out[data.test_mask], data.y[data.test_mask])
+        out = model(data.x, data.edge_index)
+        mask = data.val_mask
+        if mode == "test":
+            mask = data.test_mask
+        loss = F.nll_loss(out[mask], data.y[mask])
         pred = out.argmax(dim=1)
-        correct = (pred[data.test_mask] == data.y[data.test_mask]).sum()
-        acc = int(correct) / int(data.test_mask.sum())
-        writer.add_scalar("test/loss", loss, epoch)
-        writer.add_scalar("test/acc", acc, epoch)
+        correct = (pred[mask] == data.y[mask]).sum()
+        acc = int(correct) / int(mask.sum())
+        writer.add_scalar(f"{mode}/loss", loss, epoch)
+        writer.add_scalar(f"{mode}/acc", acc, epoch)
 
 
 if __name__ == '__main__':
     for epoch in range(1, 201):
         train(epoch)
         test(epoch)
-        writer.close()
+        test(epoch, mode="test")
+    writer.close()
