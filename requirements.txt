@@ -6,3 +6,5 @@ torch-cluster
 torch-spline-conv
 torchvision
 tensorboard
+gensim
+stellargraph==1.2.1

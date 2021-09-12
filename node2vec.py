@@ -1,15 +1,8 @@
-import stellargraph as sg
-import matplotlib.pyplot as plt
 import numpy as np
-
-from sklearn.manifold import TSNE
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegressionCV
-from sklearn.metrics import accuracy_score
-
-from stellargraph.data import BiasedRandomWalk # Second-order random walk
-from stellargraph import StellarGraph
+from sklearn.model_selection import train_test_split
 from stellargraph import datasets
+from stellargraph.data import BiasedRandomWalk  # Second-order random walk
 
 # load dataset
 dataset = datasets.Cora()
