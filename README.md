@@ -2,7 +2,7 @@
 # DataMiningGCN  
   
 
- 1. **Run training model GCN & G U-Nets**: trainer.py
+ 1. **Run training model or predict GCN & G U-Nets**: main.py
 
 	param:   
 

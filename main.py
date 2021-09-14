@@ -1,5 +1,6 @@
 import argparse
 
+import pandas as pd
 from torch_geometric.datasets import Planetoid
 import torch
 import torch.nn.functional as F
@@ -8,9 +9,9 @@ from torch.utils.tensorboard import SummaryWriter
 from model import GCN, GraphUNet
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default="Cora",
+parser.add_argument('--dataset', type=str, default="PubMed",
                     help="Dataset: Cora, CiteSeer, PubMed.")
-parser.add_argument('--isUseUNet', action='store_true', default=False,
+parser.add_argument('--isUseUNet', action='store_true', default=True,
                     help='Select model Graph U-net or origin GCN.')
 parser.add_argument('--no-cuda', action='store_true', default=False,
                     help='Disables CUDA training.')
@@ -41,6 +42,19 @@ data = dataset[0].to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
 writer = SummaryWriter('./runs/' + model._get_name())
+
+subject = {"Cora": ['Case_Based',
+                    'Genetic_Algorithms',
+                    'Neural_Networks',
+                    'Probabilistic_Methods',
+                    'Reinforcement_Learning',
+                    'Rule_Learning',
+                    'Theory'],
+           "CiteSeer": ['AI', 'Agents', 'DB', 'HCI', 'IR', 'ML'],
+           "PubMed": ["Diabetes Mellitus, Experimental",
+                      "Diabetes Mellitus Type 1",
+                      "Diabetes Mellitus Type 2"]
+           }
 
 
 def train(epoch):
@@ -86,7 +100,20 @@ def test(epoch, mode="val"):
             print("best: ", best)
 
 
-if __name__ == '__main__':
+def predict():
+    mask = data.test_mask
+    model.load_state_dict(torch.load(f"best_{model._get_name()}_{dataset.name}.pkl"))
+    model.eval()
+    out = model(data.x, data.edge_index)
+    pred = out.argmax(dim=1)[mask]
+    label = data.y[mask]
+
+    df = pd.DataFrame({"Predicted": [subject[dataset.name][i] for i in pred],
+                       "True": [subject[dataset.name][i] for i in label]})
+    df.to_csv(f"result_{model._get_name()}_{dataset.name}.csv")
+
+
+def do_train():
     for epoch in range(1, args.epochs + 1):
         train(epoch)
         # test(epoch)
@@ -94,3 +121,8 @@ if __name__ == '__main__':
     writer.close()
     torch.save(model.state_dict(), f"last_{model._get_name()}_{dataset.name}.pkl")
     print(best)
+
+
+if __name__ == '__main__':
+    # do_train()
+    predict()
